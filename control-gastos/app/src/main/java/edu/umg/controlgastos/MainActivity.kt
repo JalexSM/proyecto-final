@@ -4,103 +4,78 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import edu.umg.programacion2.gastos.datos.MovimientoRepository
 import edu.umg.programacion2.gastos.modelo.Categoria
-import edu.umg.programacion2.gastos.modelo.Gasto
+import edu.umg.programacion2.gastos.modelo.Movimiento
+import edu.umg.programacion2.gastos.modelo.TipoMovimiento
+import edu.umg.programacion2.gastos.servicio.MovimientoService
 import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var servicio: MovimientoService
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        // ==========================================
-        // 1. CREAR UN GASTO DESDE GASTOS-CORE
-        // ==========================================
-
-        val gasto = Gasto(
-            id = 1,
-            descripcion = "Almuerzo",
-            monto = 35.50,
-            categoria = Categoria.COMIDA
-        )
-
-        // ==========================================
-        // 2. OBTENER LOS ELEMENTOS DE LA INTERFAZ
-        // ==========================================
+        val repository = MovimientoRepository()
+        servicio = MovimientoService(repository)
 
         val txtSaldo = findViewById<TextView>(R.id.txtSaldo)
         val txtIngresos = findViewById<TextView>(R.id.txtIngresos)
         val txtGastos = findViewById<TextView>(R.id.txtGastos)
         val txtResultado = findViewById<TextView>(R.id.txtResultado)
+        val btnAgregarGasto = findViewById<Button>(R.id.btnAgregarGasto)
 
-        val btnAgregarGasto =
-            findViewById<Button>(R.id.btnAgregarGasto)
+        // Registrar movimientos de prueba
+        servicio.registrar(
+            Movimiento(
+                descripcion = "Salario",
+                monto = 4000.00,
+                tipo = TipoMovimiento.INGRESO,
+                categoria = Categoria.SALARIO
+            )
+        )
 
-        // ==========================================
-        // 3. MOSTRAR LOS DATOS DEL GASTO
-        // ==========================================
+        servicio.registrar(
+            Movimiento(
+                descripcion = "Almuerzo",
+                monto = 35.50,
+                tipo = TipoMovimiento.GASTO,
+                categoria = Categoria.COMIDA
+            )
+        )
 
-        val formatoMoneda = { monto: Double ->
-            String.format(Locale.US, "Q %.2f", monto)
+        fun formatoMoneda(monto: Double): String {
+            return String.format(Locale.US, "Q %.2f", monto)
         }
 
-        // Este ejemplo contiene un gasto, pero ningún ingreso.
-        val ingresos = 0.0
-        val totalGastos = gasto.monto
-        val saldo = ingresos - totalGastos
+        fun actualizarResumen() {
+            txtSaldo.text = formatoMoneda(servicio.calcularSaldo())
+            txtIngresos.text = formatoMoneda(servicio.calcularTotalIngresos())
+            txtGastos.text = formatoMoneda(servicio.calcularTotalGastos())
 
-        txtSaldo.text = formatoMoneda(saldo)
-        txtIngresos.text = formatoMoneda(ingresos)
-        txtGastos.text = formatoMoneda(totalGastos)
+            val movimientos = servicio.listarMovimientos()
 
-        txtResultado.text =
-            "Conexión con gastos-core correcta\n\n" +
-                    "Descripción: ${gasto.descripcion}\n" +
-                    "Monto: ${formatoMoneda(gasto.monto)}\n" +
-                    "Categoría: ${gasto.categoria}"
+            txtResultado.text = movimientos.joinToString("\n\n") { movimiento ->
+                "ID: ${movimiento.id}\n" +
+                        "${movimiento.descripcion}\n" +
+                        "Tipo: ${movimiento.tipo}\n" +
+                        "Categoría: ${movimiento.categoria}\n" +
+                        "Monto: ${formatoMoneda(movimiento.monto)}"
+            }
+        }
 
-        // ==========================================
-        // 4. BOTÓN PARA AGREGAR UN GASTO
-        // ==========================================
+        actualizarResumen()
 
         btnAgregarGasto.setOnClickListener {
             Toast.makeText(
                 this,
-                "En el siguiente paso crearemos el formulario",
+                "El siguiente paso será crear el formulario de registro",
                 Toast.LENGTH_SHORT
             ).show()
-        }
-
-        // ==========================================
-        // 5. AJUSTAR LA PANTALLA A LAS BARRAS DEL SISTEMA
-        // ==========================================
-
-        val vistaPrincipal = findViewById<android.view.View>(R.id.main)
-
-        val paddingIzquierdo = vistaPrincipal.paddingLeft
-        val paddingSuperior = vistaPrincipal.paddingTop
-        val paddingDerecho = vistaPrincipal.paddingRight
-        val paddingInferior = vistaPrincipal.paddingBottom
-
-        ViewCompat.setOnApplyWindowInsetsListener(vistaPrincipal) { vista, insets ->
-
-            val barrasSistema =
-                insets.getInsets(WindowInsetsCompat.Type.systemBars())
-
-            vista.setPadding(
-                paddingIzquierdo + barrasSistema.left,
-                paddingSuperior + barrasSistema.top,
-                paddingDerecho + barrasSistema.right,
-                paddingInferior + barrasSistema.bottom
-            )
-
-            insets
         }
     }
 }
