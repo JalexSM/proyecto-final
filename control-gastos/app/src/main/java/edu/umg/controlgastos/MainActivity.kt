@@ -71,11 +71,11 @@ class MainActivity : AppCompatActivity() {
         actualizarResumen()
 
         btnAgregarGasto.setOnClickListener {
-            Toast.makeText(
+            val intent = android.content.Intent(
                 this,
-                "El siguiente paso será crear el formulario de registro",
-                Toast.LENGTH_SHORT
-            ).show()
+                RegistrarMovimientoActivity::class.java
+            )
+            startActivity(intent)
         }
     }
 }
