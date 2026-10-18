@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
         val txtIngresos = findViewById<TextView>(R.id.txtIngresos)
         val txtGastos = findViewById<TextView>(R.id.txtGastos)
         val txtResultado = findViewById<TextView>(R.id.txtResultado)
-        val btnAgregarGasto = findViewById<Button>(R.id.btnAgregarGasto)
+        val btnAgregarMovimiento = findViewById<Button>(R.id.btnAgregarGasto)
 
         // Registrar movimientos de prueba
         servicio.registrar(
@@ -70,7 +70,7 @@ class MainActivity : AppCompatActivity() {
 
         actualizarResumen()
 
-        btnAgregarGasto.setOnClickListener {
+        btnAgregarMovimiento.setOnClickListener {
             val intent = android.content.Intent(
                 this,
                 RegistrarMovimientoActivity::class.java
