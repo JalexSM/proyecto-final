@@ -1,27 +1,29 @@
 package edu.umg.controlgastos
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import edu.umg.programacion2.gastos.datos.MovimientoRepository
-import edu.umg.programacion2.gastos.modelo.Categoria
-import edu.umg.programacion2.gastos.modelo.Movimiento
-import edu.umg.programacion2.gastos.modelo.TipoMovimiento
 import edu.umg.programacion2.gastos.servicio.MovimientoService
 import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var servicio: MovimientoService
+    private lateinit var txtSaldo: TextView
+    private lateinit var txtIngresos: TextView
+    private lateinit var txtGastos: TextView
+    private lateinit var txtResultado: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val repository = MovimientoRepository()
-        servicio = MovimientoService(repository)
+
+        // Obtener el servicio compartido de la aplicación
+        val app = application as ControlGastosApp
+        servicio = app.servicio
 
         val txtSaldo = findViewById<TextView>(R.id.txtSaldo)
         val txtIngresos = findViewById<TextView>(R.id.txtIngresos)
@@ -29,24 +31,12 @@ class MainActivity : AppCompatActivity() {
         val txtResultado = findViewById<TextView>(R.id.txtResultado)
         val btnAgregarMovimiento = findViewById<Button>(R.id.btnAgregarGasto)
 
-        // Registrar movimientos de prueba
-        servicio.registrar(
-            Movimiento(
-                descripcion = "Salario",
-                monto = 4000.00,
-                tipo = TipoMovimiento.INGRESO,
-                categoria = Categoria.SALARIO
-            )
-        )
+        btnAgregarMovimiento.setOnClickListener {
+            val intent = Intent(this, RegistrarMovimientoActivity::class.java)
+            startActivity(intent)
+        }
 
-        servicio.registrar(
-            Movimiento(
-                descripcion = "Almuerzo",
-                monto = 35.50,
-                tipo = TipoMovimiento.GASTO,
-                categoria = Categoria.COMIDA
-            )
-        )
+
 
         fun formatoMoneda(monto: Double): String {
             return String.format(Locale.US, "Q %.2f", monto)
@@ -59,23 +49,22 @@ class MainActivity : AppCompatActivity() {
 
             val movimientos = servicio.listarMovimientos()
 
-            txtResultado.text = movimientos.joinToString("\n\n") { movimiento ->
-                "ID: ${movimiento.id}\n" +
-                        "${movimiento.descripcion}\n" +
-                        "Tipo: ${movimiento.tipo}\n" +
-                        "Categoría: ${movimiento.categoria}\n" +
-                        "Monto: ${formatoMoneda(movimiento.monto)}"
+            txtResultado.text = if (movimientos.isEmpty()) {
+                "Todavía no hay movimientos registrados."
+            } else {
+                movimientos.joinToString("\n\n") { movimiento ->
+                    "ID: ${movimiento.id}\n" +
+                            "${movimiento.descripcion}\n" +
+                            "Tipo: ${movimiento.tipo}\n" +
+                            "Categoría: ${movimiento.categoria}\n" +
+                            "Monto: ${formatoMoneda(movimiento.monto)}"
+
+                    }
             }
+
         }
 
         actualizarResumen()
 
-        btnAgregarMovimiento.setOnClickListener {
-            val intent = android.content.Intent(
-                this,
-                RegistrarMovimientoActivity::class.java
-            )
-            startActivity(intent)
-        }
     }
 }
