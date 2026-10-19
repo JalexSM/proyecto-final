@@ -9,7 +9,9 @@ import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import edu.umg.programacion2.gastos.modelo.Categoria
+import edu.umg.programacion2.gastos.modelo.Movimiento
 import edu.umg.programacion2.gastos.modelo.TipoMovimiento
+import edu.umg.programacion2.gastos.servicio.MovimientoService
 
 
 class RegistrarMovimientoActivity : AppCompatActivity() {
@@ -19,11 +21,14 @@ class RegistrarMovimientoActivity : AppCompatActivity() {
     private lateinit var spCategoria: Spinner
     private lateinit var btnGuardarMovimiento: Button
     private lateinit var btnCancelar: Button
-
+    private lateinit var servicio: MovimientoService
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_registrar_movimiento)
+
+        servicio = (application as ControlGastosApp).servicio
+
 
         // 1. Conectar las variables con los elementos del XML
         rgTipoMovimiento = findViewById(R.id.rgTipoMovimiento)
@@ -55,6 +60,8 @@ class RegistrarMovimientoActivity : AppCompatActivity() {
         btnCancelar.setOnClickListener {
             finish()
         }
+
+        servicio = (application as ControlGastosApp).servicio
 
     }
 
@@ -136,14 +143,35 @@ class RegistrarMovimientoActivity : AppCompatActivity() {
             )
         }
 
+
         val categoria = categorias[spCategoria.selectedItemPosition]
 
-        // comprobamos que los datos sean válidos
-        Toast.makeText(
-            this,
-            "Datos válidos:\n$descripcion\nQ %.2f\n$tipo\n$categoria".format(monto),
-            Toast.LENGTH_LONG
-        ).show()
+
+        try {
+            servicio.registrar(
+                Movimiento(
+                    descripcion = descripcion,
+                    monto = monto,
+                    tipo = tipo,
+                    categoria = categoria
+                )
+            )
+
+            Toast.makeText(
+                this,
+                "Movimiento registrado correctamente",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            finish()
+
+        } catch (e: IllegalArgumentException) {
+            Toast.makeText(
+                this,
+                e.message ?: "No se pudo registrar el movimiento",
+                Toast.LENGTH_LONG
+            ).show()
+        }
     }
 
 
