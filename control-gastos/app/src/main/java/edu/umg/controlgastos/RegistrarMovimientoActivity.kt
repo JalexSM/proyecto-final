@@ -23,10 +23,12 @@ class RegistrarMovimientoActivity : AppCompatActivity() {
     private lateinit var btnCancelar: Button
     private lateinit var servicio: MovimientoService
 
+    private var movimientoId: Int? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_registrar_movimiento)
-
+        servicio = (application as ControlGastosApp).servicio
         servicio = (application as ControlGastosApp).servicio
 
 
@@ -37,6 +39,8 @@ class RegistrarMovimientoActivity : AppCompatActivity() {
         spCategoria = findViewById(R.id.spCategoria)
         btnGuardarMovimiento = findViewById(R.id.btnGuardarMovimiento)
         btnCancelar = findViewById(R.id.btnCancelar)
+
+
 
         // 2. Cargar las categorías iniciales
         cargarCategorias(TipoMovimiento.GASTO)
@@ -51,6 +55,15 @@ class RegistrarMovimientoActivity : AppCompatActivity() {
 
             cargarCategorias(tipo)
         }
+        movimientoId = intent.getIntExtra("movimiento_id", -1)
+            .takeIf { it > 0 }
+
+        if (movimientoId != null) {
+            cargarMovimientoParaEditar()
+        }
+
+
+
         // 4. Validar los datos al pulsar Guardar
         btnGuardarMovimiento.setOnClickListener {
             guardarMovimiento()
@@ -60,8 +73,6 @@ class RegistrarMovimientoActivity : AppCompatActivity() {
         btnCancelar.setOnClickListener {
             finish()
         }
-
-        servicio = (application as ControlGastosApp).servicio
 
     }
 
@@ -102,6 +113,64 @@ class RegistrarMovimientoActivity : AppCompatActivity() {
 
         spCategoria.adapter = adaptador
     }
+
+
+    private fun cargarMovimientoParaEditar() {
+        val id = movimientoId ?: return
+        val movimiento = servicio.buscarPorId(id)
+
+        if (movimiento == null) {
+            Toast.makeText(
+                this,
+                "No se encontró el movimiento",
+                Toast.LENGTH_LONG
+            ).show()
+            finish()
+            return
+        }
+
+        etDescripcion.setText(movimiento.descripcion)
+        etMonto.setText(movimiento.monto.toString())
+
+        // Seleccionar ingreso o gasto
+        rgTipoMovimiento.check(
+            if (movimiento.tipo == TipoMovimiento.INGRESO) {
+                R.id.rbIngreso
+            } else {
+                R.id.rbGasto
+            }
+        )
+
+        // Cargar las categorías correspondientes al tipo
+        cargarCategorias(movimiento.tipo)
+
+        // Seleccionar la categoría guardada
+        val categorias = when (movimiento.tipo) {
+            TipoMovimiento.INGRESO -> listOf(
+                Categoria.SALARIO,
+                Categoria.VENTAS,
+                Categoria.OTROS_INGRESOS
+            )
+
+            TipoMovimiento.GASTO -> listOf(
+                Categoria.COMIDA,
+                Categoria.TRANSPORTE,
+                Categoria.ENTRETENIMIENTO,
+                Categoria.SERVICIOS,
+                Categoria.ESTUDIOS,
+                Categoria.OTROS_GASTOS
+            )
+        }
+
+        val posicion = categorias.indexOf(movimiento.categoria)
+
+        if (posicion >= 0) {
+            spCategoria.setSelection(posicion)
+        }
+
+        btnGuardarMovimiento.text = "Actualizar movimiento"
+    }
+
 
     private fun guardarMovimiento() {
         val descripcion = etDescripcion.text.toString().trim()
@@ -147,31 +216,63 @@ class RegistrarMovimientoActivity : AppCompatActivity() {
         val categoria = categorias[spCategoria.selectedItemPosition]
 
 
-        try {
-            servicio.registrar(
-                Movimiento(
-                    descripcion = descripcion,
-                    monto = monto,
-                    tipo = tipo,
-                    categoria = categoria
-                )
-            )
 
-            Toast.makeText(
-                this,
-                "Movimiento registrado correctamente",
-                Toast.LENGTH_SHORT
-            ).show()
+        try {
+            if (movimientoId == null) {
+                // Registrar un movimiento nuevo
+                servicio.registrar(
+                    Movimiento(
+                        descripcion = descripcion,
+                        monto = monto,
+                        tipo = tipo,
+                        categoria = categoria
+                    )
+                )
+
+                Toast.makeText(
+                    this,
+                    "Movimiento registrado correctamente",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+            } else {
+                // Actualizar un movimiento existente
+                val actualizado = servicio.actualizar(
+                    Movimiento(
+                        id = movimientoId!!,
+                        descripcion = descripcion,
+                        monto = monto,
+                        tipo = tipo,
+                        categoria = categoria
+                    )
+                )
+
+                if (!actualizado) {
+                    Toast.makeText(
+                        this,
+                        "No se pudo actualizar el movimiento",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    return
+                }
+
+                Toast.makeText(
+                    this,
+                    "Movimiento actualizado correctamente",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
 
             finish()
 
         } catch (e: IllegalArgumentException) {
             Toast.makeText(
                 this,
-                e.message ?: "No se pudo registrar el movimiento",
+                e.message ?: "No se pudo guardar el movimiento",
                 Toast.LENGTH_LONG
             ).show()
         }
+
     }
 
 

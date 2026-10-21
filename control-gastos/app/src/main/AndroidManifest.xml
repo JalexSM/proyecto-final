@@ -13,6 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Controlgastos">
         <activity
+
             android:name=".MainActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize">
@@ -26,6 +27,9 @@
             android:name=".RegistrarMovimientoActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".MovimientosActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

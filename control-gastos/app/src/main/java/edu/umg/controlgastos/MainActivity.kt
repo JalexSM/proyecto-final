@@ -38,6 +38,13 @@ class MainActivity : AppCompatActivity() {
             )
             startActivity(intent)
         }
+        val txtVerTodos = findViewById<TextView>(R.id.txtVerTodos)
+
+        txtVerTodos.setOnClickListener {
+            startActivity(
+                Intent(this, MovimientosActivity::class.java)
+            )
+        }
     }
 
     override fun onResume() {
