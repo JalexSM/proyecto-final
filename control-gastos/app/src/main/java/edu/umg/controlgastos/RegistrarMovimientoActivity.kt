@@ -1,5 +1,9 @@
 package edu.umg.controlgastos
 
+
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ArrayAdapter
@@ -225,7 +229,8 @@ class RegistrarMovimientoActivity : AppCompatActivity() {
                         descripcion = descripcion,
                         monto = monto,
                         tipo = tipo,
-                        categoria = categoria
+                        categoria = categoria,
+                        fecha = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
                     )
                 )
 
@@ -236,6 +241,17 @@ class RegistrarMovimientoActivity : AppCompatActivity() {
                 ).show()
 
             } else {
+                val movimientoOriginal = servicio.buscarPorId(movimientoId!!)
+
+                if (movimientoOriginal == null) {
+                    Toast.makeText(
+                        this,
+                        "No se encontró el movimiento",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    return
+                }
+
                 // Actualizar un movimiento existente
                 val actualizado = servicio.actualizar(
                     Movimiento(
@@ -243,7 +259,9 @@ class RegistrarMovimientoActivity : AppCompatActivity() {
                         descripcion = descripcion,
                         monto = monto,
                         tipo = tipo,
-                        categoria = categoria
+                        categoria = categoria,
+                        fecha = movimientoOriginal.fecha
+
                     )
                 )
 

@@ -32,7 +32,7 @@ android {
 }
 
 dependencies {
-    implementation("edu.umg.programacion2:gastos-core:1.0-SNAPSHOT")
+    implementation("edu.umg.programacion2:gastos-core:1.1.0-SNAPSHOT")
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)

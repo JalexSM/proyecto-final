@@ -33,7 +33,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
             android:layout_marginBottom="20dp"
-            android:text="Tus ingresos y gastos, organizados por separado"
+            android:text="toca un movimiento para eliminar o editar "
             android:textColor="#A9B6CA"
             android:textSize="14sp" />
 
