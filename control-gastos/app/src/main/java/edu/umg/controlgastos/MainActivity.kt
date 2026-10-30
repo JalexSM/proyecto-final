@@ -6,27 +6,34 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import edu.umg.controlgastos.datos.PerfilRepository
 import edu.umg.programacion2.gastos.servicio.MovimientoService
 import java.util.Locale
+
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var servicio: MovimientoService
+    private lateinit var perfilRepository: PerfilRepository
     private lateinit var txtSaldo: TextView
     private lateinit var txtIngresos: TextView
     private lateinit var txtGastos: TextView
     private lateinit var txtResultado: TextView
+
+    private lateinit var txtSaludoPerfil: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         servicio = (application as ControlGastosApp).servicio
+        perfilRepository = PerfilRepository(this)
 
         txtSaldo = findViewById(R.id.txtSaldo)
         txtIngresos = findViewById(R.id.txtIngresos)
         txtGastos = findViewById(R.id.txtGastos)
         txtResultado = findViewById(R.id.txtResultado)
+        txtSaludoPerfil = findViewById(R.id.txtSaludoPerfil)
 
         val btnAgregarMovimiento =
             findViewById<Button>(R.id.btnAgregarGasto)
@@ -38,6 +45,12 @@ class MainActivity : AppCompatActivity() {
             )
             startActivity(intent)
         }
+
+        val btnMiPerfil = findViewById<Button>(R.id.btnMiPerfil)
+
+        btnMiPerfil.setOnClickListener {
+            startActivity(Intent(this, PerfilActivity::class.java))
+        }
         val txtVerTodos = findViewById<TextView>(R.id.txtVerTodos)
 
         txtVerTodos.setOnClickListener {
@@ -47,9 +60,19 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun actualizarSaludoPerfil() {
+        val perfil = perfilRepository.obtenerPerfil()
+
+        txtSaludoPerfil.text = if (perfil != null) {
+            "¡Hola, ${perfil.nombre}!"
+        } else {
+            "¡Bienvenido a ControlGastos!"
+        }
+    }
     override fun onResume() {
         super.onResume()
         actualizarResumen()
+        actualizarSaludoPerfil()
     }
 
     private fun actualizarResumen() {
@@ -76,5 +99,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun formatoMoneda(monto: Double): String {
         return String.format(Locale.US, "Q %.2f", monto)
+    }
+
+    override fun onDestroy() {
+        perfilRepository.cerrar()
+        super.onDestroy()
     }
 }

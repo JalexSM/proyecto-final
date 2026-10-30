@@ -40,6 +40,28 @@
             android:textColor="#A9B6CA"
             android:textSize="14sp" />
 
+        <!-- PERFIL DEL USUARIO -->
+
+        <TextView
+            android:id="@+id/txtSaludoPerfil"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="¡Bienvenido a ControlGastos!"
+            android:textColor="#FFFFFF"
+            android:textSize="17sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnMiPerfil"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="#263B59"
+            android:text="Mi perfil  →"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF" />
+
         <!-- TARJETA DE SALDO -->
 
         <LinearLayout

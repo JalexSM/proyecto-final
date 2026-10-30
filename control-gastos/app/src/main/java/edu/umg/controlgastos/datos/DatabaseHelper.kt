@@ -11,7 +11,7 @@ class DatabaseHelper(context: Context) :
         db.execSQL(
             """
             CREATE TABLE movimientos (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id INTEGER PRIMARY KEY AUTOINCREMENT, 
                 descripcion TEXT NOT NULL,
                 monto REAL NOT NULL,
                 tipo TEXT NOT NULL,
@@ -27,12 +27,29 @@ class DatabaseHelper(context: Context) :
         oldVersion: Int,
         newVersion: Int
     ) {
-        // Aquí agregaremos migraciones cuando cambie la estructura.
-        // No eliminamos la tabla para evitar perder los datos.
+        // Actualización de la versión 1 a la versión 2.
+        if (oldVersion < 2) {
+            crearTablaPerfil(db)
+        }
     }
+
+    private fun crearTablaPerfil(db: SQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS perfil_usuario (
+                id INTEGER PRIMARY KEY CHECK (id = 1),
+                nombre TEXT NOT NULL,
+                correo TEXT NOT NULL,
+                telefono TEXT NOT NULL,
+                ocupacion TEXT NOT NULL
+            )
+            """.trimIndent()
+        )
+    }
+
 
     companion object {
         private const val DATABASE_NAME = "control_gastos.db"
-        private const val DATABASE_VERSION = 1
+        private const val DATABASE_VERSION = 2
     }
 }
